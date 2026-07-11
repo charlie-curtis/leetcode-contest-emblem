@@ -1,0 +1,28 @@
+{
+  "name": "leetcode-contest-emblem",
+  "version": "0.1.0",
+  "description": "Generate embeddable SVG and PNG emblems for aggregate LeetCode contest stats.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --env-file=.env src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "keywords": [
+    "leetcode",
+    "contest",
+    "badge",
+    "emblem",
+    "svg",
+    "png"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
