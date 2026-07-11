@@ -26,3 +26,5 @@ Build a local-first app that can later be deployed easily. It should generate bo
 - 2026-07-11: Verified stats aggregation tests pass with `npm test`.
 - 2026-07-11: Verified SVG and PNG renderers with sample contest data.
 - 2026-07-11: Started the local HTTP server on port `3131` and confirmed `/health` returns OK.
+- 2026-07-11: Created public GitHub repository at `https://github.com/charlie-curtis/leetcode-contest-emblem`.
+- 2026-07-11: Pushed the initial implementation to GitHub.
