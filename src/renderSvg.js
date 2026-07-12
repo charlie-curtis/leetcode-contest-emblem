@@ -28,7 +28,7 @@ const THEMES = {
 
 export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   const colors = THEMES[theme] ?? THEMES.dark;
-  const chartPoints = buildRatingPolyline(stats.contests, 76, 306, 668, 82);
+  const chartPoints = buildRatingPolyline(stats.contests, 314, 312, 448, 58);
   const latest = stats.latestContest;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -38,67 +38,64 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   <rect width="${CARD_WIDTH}" height="${CARD_HEIGHT}" rx="18" fill="${colors.background}"/>
   <rect x="14" y="14" width="792" height="402" rx="14" fill="${colors.panel}" stroke="${colors.stroke}"/>
 
-  <g transform="translate(42 36)">
+  <g transform="translate(44 42) scale(0.62)">
     <path d="M34 0 8 26a19 19 0 0 0 0 27l21 21a19 19 0 0 0 27 0l11-11" stroke="${colors.text}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="m33 64 27-27" stroke="${colors.accent}" stroke-width="8" stroke-linecap="round"/>
     <path d="M43 23h31" stroke="${colors.muted}" stroke-width="8" stroke-linecap="round"/>
   </g>
 
-  <text x="132" y="76" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800">${escapeXml(stats.username)}</text>
-  <text x="132" y="110" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="17">Contest aggregate emblem</text>
-  <text x="744" y="74" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="800" text-anchor="end">#${formatInteger(stats.globalRanking)}</text>
+  <text x="104" y="64" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="850">${escapeXml(stats.username)}</text>
+  <text x="105" y="93" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="650">LeetCode contest stats</text>
+  <text x="760" y="64" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="850" text-anchor="end">#${formatInteger(stats.globalRanking)}</text>
 
-  ${metricBlock(58, 156, 'Avg solved', formatDecimal(stats.averageSolved), `/ ${formatInteger(latest?.totalProblems ?? 4)}`, colors)}
-  ${metricBlock(260, 156, 'Avg rank', formatInteger(stats.averageRank), '', colors)}
-  ${metricBlock(462, 156, 'Best finish', latestRank(stats.bestFinish), contestSubline(stats.bestFinish), colors)}
-  ${metricBlock(620, 156, 'Worst finish', latestRank(stats.worstFinish), contestSubline(stats.worstFinish), colors)}
+  <line x1="44" y1="122" x2="776" y2="122" stroke="${colors.stroke}"/>
 
-  <line x1="40" y1="246" x2="780" y2="246" stroke="${colors.stroke}"/>
+  ${metricBlock(58, 154, 'Avg solved', `${formatDecimal(stats.averageSolved)} / ${formatInteger(latest?.totalProblems ?? 4)}`, colors, 31)}
+  ${metricBlock(246, 154, 'Avg rank', formatInteger(stats.averageRank), colors, 31)}
+  ${metricBlock(434, 154, 'Best finish', latestRank(stats.bestFinish), colors, 31)}
+  ${metricBlock(622, 154, 'Worst finish', latestRank(stats.worstFinish), colors, 31)}
 
-  <text x="58" y="282" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Contests</text>
-  <text x="58" y="322" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="850">${formatInteger(stats.totalContests)}</text>
+  <line x1="44" y1="222" x2="776" y2="222" stroke="${colors.stroke}"/>
 
-  <text x="212" y="282" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Current rating</text>
-  <text x="212" y="322" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="850">${formatInteger(stats.currentRating)}</text>
+  ${smallMetric(58, 260, 'Contests', formatInteger(stats.totalContests), colors)}
+  ${smallMetric(180, 260, 'All-kills', formatInteger(stats.allKillCount), colors)}
+  ${smallMetric(314, 260, 'Current rating', formatInteger(stats.currentRating), colors)}
+  ${smallMetric(484, 260, 'Highest rating', formatInteger(stats.highestRating), colors)}
+  ${smallMetric(654, 260, 'Top %', formatPercent(stats.topPercentage), colors)}
 
-  <text x="404" y="282" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Highest rating</text>
-  <text x="404" y="322" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="850">${formatInteger(stats.highestRating)}</text>
+  <g transform="translate(44 294)">
+    <text x="0" y="14" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Latest contest</text>
+    <text x="0" y="42" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800">${escapeXml(latest?.title ?? 'n/a')}</text>
+    <text x="0" y="66" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="15">${latestRank(latest)} - avg finish ${formatDuration(stats.averageFinishTimeSeconds)}</text>
+  </g>
 
-  <text x="620" y="282" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Top percentage</text>
-  <text x="620" y="322" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="850">${formatPercent(stats.topPercentage)}</text>
-
-  <g opacity="0.95">
+  <g opacity="0.95" transform="translate(0 0)">
     ${chartGrid(colors)}
     ${chartPoints ? `<polyline points="${chartPoints}" fill="none" stroke="${colors.accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
   </g>
-
-  <text x="58" y="394" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="16">Latest: ${escapeXml(latest?.title ?? 'n/a')} - ${latestRank(latest)} - avg finish ${formatDuration(stats.averageFinishTimeSeconds)}</text>
 </svg>`;
 }
 
-function metricBlock(x, y, label, value, suffix, colors) {
+function metricBlock(x, y, label, value, colors, valueSize) {
   return `
-  <text x="${x}" y="${y}" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="17" font-weight="700">${label}</text>
-  <text x="${x}" y="${y + 42}" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="850">${value}</text>
-  <text x="${x + 92}" y="${y + 42}" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="750">${escapeXml(suffix)}</text>`;
+  <text x="${x}" y="${y}" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="750">${label}</text>
+  <text x="${x}" y="${y + 42}" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="${valueSize}" font-weight="850">${escapeXml(value)}</text>`;
+}
+
+function smallMetric(x, y, label, value, colors) {
+  return `
+  <text x="${x}" y="${y}" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="750">${label}</text>
+  <text x="${x}" y="${y + 34}" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="29" font-weight="850">${escapeXml(value)}</text>`;
 }
 
 function latestRank(contest) {
   return contest?.ranking ? `#${formatInteger(contest.ranking)}` : 'n/a';
 }
 
-function contestSubline(contest) {
-  if (!contest) {
-    return '';
-  }
-
-  return contest.title.replace(/^Weekly Contest /, 'W').replace(/^Biweekly Contest /, 'BW');
-}
-
 function chartGrid(colors) {
-  return [0, 1, 2].map((index) => {
-    const y = 326 + index * 28;
-    return `<line x1="78" y1="${y}" x2="746" y2="${y}" stroke="${colors.grid}" stroke-width="1"/>`;
+  return [0, 1, 2, 3].map((index) => {
+    const y = 312 + index * 19;
+    return `<line x1="314" y1="${y}" x2="762" y2="${y}" stroke="${colors.grid}" stroke-width="1"/>`;
   }).join('\n    ');
 }
 

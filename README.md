@@ -16,6 +16,7 @@ The app reads your LeetCode cookie from local environment variables, fetches con
 - Average rank
 - Best finish
 - Worst finish
+- All-kill count
 - Average finish time
 - Current and highest contest rating when available
 - Latest contest summary

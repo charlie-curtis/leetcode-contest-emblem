@@ -13,6 +13,7 @@ export function buildContestStats(username, contestData) {
       averageRank: 0,
       bestFinish: null,
       worstFinish: null,
+      allKillCount: 0,
       averageFinishTimeSeconds: 0,
       latestContest: null,
       currentRating: null,
@@ -34,6 +35,7 @@ export function buildContestStats(username, contestData) {
     averageRank: average(attended.map((contest) => contest.ranking)),
     bestFinish: minBy(attended, (contest) => contest.ranking),
     worstFinish: maxBy(attended, (contest) => contest.ranking),
+    allKillCount: attended.filter(isAllKill).length,
     averageFinishTimeSeconds: average(attended.map((contest) => contest.finishTimeInSeconds)),
     latestContest: attended.at(-1),
     currentRating: numberOrNull(ranking.rating),
@@ -79,4 +81,8 @@ function maxBy(items, selector) {
 
 function numberOrNull(value) {
   return Number.isFinite(value) ? Number(value) : null;
+}
+
+function isAllKill(contest) {
+  return contest.totalProblems > 0 && contest.problemsSolved >= contest.totalProblems;
 }

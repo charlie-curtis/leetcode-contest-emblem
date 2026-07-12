@@ -31,7 +31,7 @@ const sampleContestData = {
     },
     {
       attended: true,
-      problemsSolved: 3,
+      problemsSolved: 4,
       totalProblems: 4,
       finishTimeInSeconds: 2200,
       rating: 1710,
@@ -63,10 +63,11 @@ test('buildContestStats aggregates attended contests', () => {
   const stats = buildContestStats('RandomUserName554', sampleContestData);
 
   assert.equal(stats.totalContests, 4);
-  assert.equal(stats.averageSolved, 2.5);
+  assert.equal(stats.averageSolved, 2.75);
   assert.equal(Math.round(stats.averageRank), 813);
   assert.equal(stats.bestFinish.ranking, 233);
   assert.equal(stats.worstFinish.ranking, 1424);
+  assert.equal(stats.allKillCount, 1);
   assert.equal(stats.latestContest.title, 'Weekly Contest 435');
   assert.equal(stats.currentRating, 1812.4);
   assert.equal(stats.highestRating, 1812.4);
@@ -81,4 +82,5 @@ test('buildContestStats handles an empty contest history', () => {
   assert.equal(stats.totalContests, 0);
   assert.equal(stats.bestFinish, null);
   assert.equal(stats.averageSolved, 0);
+  assert.equal(stats.allKillCount, 0);
 });
