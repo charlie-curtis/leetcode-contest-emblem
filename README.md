@@ -4,6 +4,8 @@ Generate embeddable SVG and PNG emblems for aggregate LeetCode contest stats.
 
 The app reads your LeetCode cookie from local environment variables, fetches contest history, computes aggregate stats, and renders a compact card for READMEs, dashboards, or local sharing.
 
+![Example emblem](docs/emblem-example.png)
+
 ## Output
 
 - `SVG`: vector, text-based, crisp at any size, ideal for GitHub READMEs.
