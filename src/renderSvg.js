@@ -36,7 +36,7 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${CARD_WIDTH}" height="${CARD_HEIGHT}" viewBox="0 0 ${CARD_WIDTH} ${CARD_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">${escapeXml(stats.username)} LeetCode contest emblem</title>
-  <desc id="desc">Aggregate ${escapeXml(stats.contestMode)} LeetCode contest stats including average solved, average rank, all-kills, best and worst finish, and rating trend.</desc>
+  <desc id="desc">Aggregate ${escapeXml(stats.contestMode)} LeetCode contest stats including average solved, average rank, average bugs when available, all-kills, best and worst finish, and rating trend.</desc>
   <rect width="${CARD_WIDTH}" height="${CARD_HEIGHT}" rx="18" fill="${colors.background}"/>
   <rect x="14" y="14" width="792" height="402" rx="14" fill="${colors.panel}" stroke="${colors.stroke}"/>
 
@@ -62,9 +62,9 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
 
   ${smallMetric(58, 260, 'Contests', formatInteger(stats.totalContests), colors)}
   ${smallMetric(180, 260, 'All-kills', `${formatInteger(stats.allKillCount)} / ${formatInteger(stats.totalContests)}`, colors)}
-  ${smallMetric(314, 260, 'Avg finish', formatDuration(stats.averageFinishTimeSeconds), colors)}
-  ${smallMetric(484, 260, 'Current rating', formatInteger(stats.currentRating), colors)}
-  ${smallMetric(654, 260, 'Highest rating', formatInteger(stats.highestRating), colors)}
+  ${smallMetric(314, 260, 'Avg bugs', formatAverageBugs(stats.averageBugs), colors)}
+  ${smallMetric(454, 260, 'Avg last solve', formatDuration(stats.averageFinishTimeSeconds), colors)}
+  ${smallMetric(646, 260, 'Rating', `${formatInteger(stats.currentRating)} / ${formatInteger(stats.highestRating)}`, colors, 25)}
 
   <g opacity="0.95" transform="translate(0 0)">
     <text x="58" y="312" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Rating trend</text>
@@ -95,14 +95,22 @@ function metricBlock(x, y, label, value, colors, valueSize) {
   <text x="${x}" y="${y + 42}" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="${valueSize}" font-weight="850">${escapeXml(value)}</text>`;
 }
 
-function smallMetric(x, y, label, value, colors) {
+function smallMetric(x, y, label, value, colors, valueSize = 29) {
   return `
   <text x="${x}" y="${y}" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="750">${label}</text>
-  <text x="${x}" y="${y + 34}" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="29" font-weight="850">${escapeXml(value)}</text>`;
+  <text x="${x}" y="${y + 34}" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="${valueSize}" font-weight="850">${escapeXml(value)}</text>`;
 }
 
 function latestRank(contest) {
   return contest?.ranking ? `#${formatInteger(contest.ranking)}` : 'n/a';
+}
+
+function formatAverageBugs(value) {
+  if (!Number.isFinite(value)) {
+    return 'n/a';
+  }
+
+  return formatDecimal(value);
 }
 
 function chartGrid(colors, chart) {

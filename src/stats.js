@@ -16,6 +16,8 @@ export function buildContestStats(username, contestData, { contestMode = 'actual
       worstFinish: null,
       allKillCount: 0,
       allKillRate: 0,
+      averageBugs: null,
+      bugDataAvailable: false,
       averageFinishTimeSeconds: 0,
       latestContest: null,
       currentRating: null,
@@ -30,6 +32,7 @@ export function buildContestStats(username, contestData, { contestMode = 'actual
   const ranking = contestData.userContestRanking ?? {};
   const ratings = attended.map((contest) => contest.rating).filter(Number.isFinite);
   const allKillCount = attended.filter(isAllKill).length;
+  const bugCounts = attended.map((contest) => contest.bugs).filter(Number.isFinite);
 
   return {
     username,
@@ -41,6 +44,8 @@ export function buildContestStats(username, contestData, { contestMode = 'actual
     worstFinish: maxBy(attended, (contest) => contest.ranking),
     allKillCount,
     allKillRate: allKillCount / attended.length * 100,
+    averageBugs: bugCounts.length ? average(bugCounts) : null,
+    bugDataAvailable: bugCounts.length === attended.length,
     averageFinishTimeSeconds: average(attended.map((contest) => contest.finishTimeInSeconds)),
     latestContest: attended.at(-1),
     currentRating: numberOrNull(ranking.rating),
@@ -62,6 +67,15 @@ function normalizeContest(entry) {
     problemsSolved: Number(entry.problemsSolved ?? 0),
     totalProblems: Number(entry.totalProblems ?? 0),
     finishTimeInSeconds: Number(entry.finishTimeInSeconds ?? 0),
+    bugs: numberOrNull(
+      entry.bugs ??
+      entry.failedSubmissions ??
+      entry.failedSubmissionCount ??
+      entry.wrongSubmissions ??
+      entry.wrongSubmissionCount ??
+      entry.incorrectSubmissions ??
+      entry.incorrectSubmissionCount
+    ),
     rating: numberOrNull(entry.rating),
     ranking: Number(entry.ranking)
   };
