@@ -18,16 +18,16 @@ const defaultContestMode = normalizeContestMode(config.contestMode);
 const server = http.createServer(async (request, response) => {
   try {
     const url = new URL(request.url ?? '/', `http://${request.headers.host}`);
+    const pathContestMode = contestModeFromPath(url.pathname);
+    const contestMode = normalizeContestMode(url.searchParams.get('mode') ?? pathContestMode ?? defaultContestMode);
 
     if (url.pathname === '/health') {
       return sendJson(response, 200, { ok: true });
     }
 
     if (url.pathname === '/' || url.pathname === '/index.html') {
-      return sendHtml(response, renderHomePage(config.port));
+      return sendHtml(response, renderHomePage(config.port, contestMode));
     }
-
-    const contestMode = normalizeContestMode(url.searchParams.get('mode') ?? defaultContestMode);
 
     if (url.pathname === '/api/stats') {
       const stats = await loadStats(url.searchParams.get('username'), contestMode);
@@ -74,11 +74,16 @@ async function loadStats(requestedUsername, contestMode) {
 
 function usernameFromPath(pathname) {
   const match = pathname.match(/^\/([^/]+)\.(svg|png)$/);
-  if (!match || match[1] === 'emblem') {
+  if (!match || ['emblem', 'actual', 'virtual'].includes(match[1])) {
     return null;
   }
 
   return decodeURIComponent(match[1]);
+}
+
+function contestModeFromPath(pathname) {
+  const match = pathname.match(/^\/(actual|virtual)\.(svg|png)$/);
+  return match?.[1] ?? null;
 }
 
 function sendJson(response, status, payload) {
@@ -97,7 +102,10 @@ function send(response, status, body, contentType) {
   response.end(body);
 }
 
-function renderHomePage(port) {
+function renderHomePage(port, contestMode) {
+  const actualActive = contestMode === 'actual' ? ' aria-current="page"' : '';
+  const virtualActive = contestMode === 'virtual' ? ' aria-current="page"' : '';
+
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -122,6 +130,38 @@ function renderHomePage(port) {
 
       main {
         width: min(920px, 100%);
+      }
+
+      header {
+        align-items: center;
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        font-size: 18px;
+        line-height: 1.2;
+        margin: 0;
+      }
+
+      .switcher {
+        background: #20242d;
+        border: 1px solid #343944;
+        border-radius: 8px;
+        display: inline-flex;
+        padding: 4px;
+      }
+
+      .switcher a {
+        background: transparent;
+        color: #b4bbc7;
+      }
+
+      .switcher a[aria-current="page"] {
+        background: #ff9f1c;
+        color: #111318;
       }
 
       img {
@@ -150,11 +190,18 @@ function renderHomePage(port) {
   </head>
   <body>
     <main>
-      <img src="/emblem.svg" alt="LeetCode contest emblem preview" />
+      <header>
+        <h1>LeetCode Contest Emblem</h1>
+        <div class="switcher" aria-label="Contest mode">
+          <a href="/?mode=actual"${actualActive}>Actual</a>
+          <a href="/?mode=virtual"${virtualActive}>Virtual</a>
+        </div>
+      </header>
+      <img src="/emblem.svg?mode=${contestMode}" alt="LeetCode contest emblem preview" />
       <nav>
-        <a href="/emblem.svg">SVG</a>
-        <a href="/emblem.png">PNG</a>
-        <a href="/api/stats">JSON</a>
+        <a href="/${contestMode}.svg">SVG</a>
+        <a href="/${contestMode}.png">PNG</a>
+        <a href="/api/stats?mode=${contestMode}">JSON</a>
         <a href="http://localhost:${port}/health">Health</a>
       </nav>
     </main>

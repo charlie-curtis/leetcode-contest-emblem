@@ -50,6 +50,8 @@ Open:
 - `http://localhost:3000/emblem.png`
 - `http://localhost:3000/api/stats`
 
+The home page includes an `Actual` / `Virtual` switcher so you do not need to remember URLs by hand.
+
 You can override the username per request:
 
 ```text
@@ -60,9 +62,13 @@ http://localhost:3000/your_username.png
 You can also choose the contest mode:
 
 ```text
-http://localhost:3000/emblem.svg?mode=actual
-http://localhost:3000/emblem.svg?mode=virtual
+http://localhost:3000/actual.svg
+http://localhost:3000/virtual.svg
+http://localhost:3000/actual.png
+http://localhost:3000/virtual.png
 ```
+
+The query style still works too: `http://localhost:3000/emblem.svg?mode=actual`.
 
 `actual` is backed by LeetCode's rated contest history GraphQL data. `virtual` is a first-class mode in the app, but currently returns a clear `501` response because LeetCode virtual contest history is not exposed by the same rated-history endpoint.
 
