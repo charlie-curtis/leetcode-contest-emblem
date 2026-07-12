@@ -57,7 +57,15 @@ export class LeetCodeClient {
     return userStatus.username;
   }
 
-  async getContestData(username) {
+  async getContestData(username, { contestMode = 'actual' } = {}) {
+    if (contestMode === 'virtual') {
+      const error = new Error(
+        'Virtual contest mode is selectable, but LeetCode virtual contest history is not exposed by the rated contest GraphQL endpoint used by this app yet.'
+      );
+      error.statusCode = 501;
+      throw error;
+    }
+
     return this.graphql(CONTEST_HISTORY_QUERY, { username });
   }
 

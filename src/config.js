@@ -42,6 +42,7 @@ export function getConfig() {
     leetcodeSession: process.env.LEETCODE_SESSION,
     csrfToken: process.env.LEETCODE_CSRF_TOKEN,
     cacheTtlMs: Number.parseInt(process.env.CACHE_TTL_MINUTES ?? '30', 10) * 60 * 1000,
-    theme: process.env.THEME === 'light' ? 'light' : 'dark'
+    theme: process.env.THEME === 'light' ? 'light' : 'dark',
+    contestMode: process.env.CONTEST_MODE ?? 'actual'
   };
 }

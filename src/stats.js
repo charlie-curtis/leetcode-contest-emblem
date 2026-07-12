@@ -1,4 +1,4 @@
-export function buildContestStats(username, contestData) {
+export function buildContestStats(username, contestData, { contestMode = 'actual' } = {}) {
   const history = contestData.userContestRankingHistory ?? [];
   const attended = history
     .filter((entry) => entry.attended && Number.isFinite(entry.ranking) && entry.ranking > 0)
@@ -8,12 +8,14 @@ export function buildContestStats(username, contestData) {
   if (attended.length === 0) {
     return {
       username,
+      contestMode,
       totalContests: 0,
       averageSolved: 0,
       averageRank: 0,
       bestFinish: null,
       worstFinish: null,
       allKillCount: 0,
+      allKillRate: 0,
       averageFinishTimeSeconds: 0,
       latestContest: null,
       currentRating: null,
@@ -27,15 +29,18 @@ export function buildContestStats(username, contestData) {
 
   const ranking = contestData.userContestRanking ?? {};
   const ratings = attended.map((contest) => contest.rating).filter(Number.isFinite);
+  const allKillCount = attended.filter(isAllKill).length;
 
   return {
     username,
+    contestMode,
     totalContests: attended.length,
     averageSolved: average(attended.map((contest) => contest.problemsSolved)),
     averageRank: average(attended.map((contest) => contest.ranking)),
     bestFinish: minBy(attended, (contest) => contest.ranking),
     worstFinish: maxBy(attended, (contest) => contest.ranking),
-    allKillCount: attended.filter(isAllKill).length,
+    allKillCount,
+    allKillRate: allKillCount / attended.length * 100,
     averageFinishTimeSeconds: average(attended.map((contest) => contest.finishTimeInSeconds)),
     latestContest: attended.at(-1),
     currentRating: numberOrNull(ranking.rating),

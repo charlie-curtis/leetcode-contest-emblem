@@ -5,6 +5,7 @@ import { buildContestStats } from './stats.js';
 import { renderContestEmblem } from './renderSvg.js';
 import { renderPng } from './renderPng.js';
 import { TimedCache } from './cache.js';
+import { normalizeContestMode } from './contestMode.js';
 
 const config = getConfig();
 const client = new LeetCodeClient({
@@ -12,6 +13,7 @@ const client = new LeetCodeClient({
   csrfToken: config.csrfToken
 });
 const cache = new TimedCache(config.cacheTtlMs);
+const defaultContestMode = normalizeContestMode(config.contestMode);
 
 const server = http.createServer(async (request, response) => {
   try {
@@ -25,19 +27,21 @@ const server = http.createServer(async (request, response) => {
       return sendHtml(response, renderHomePage(config.port));
     }
 
+    const contestMode = normalizeContestMode(url.searchParams.get('mode') ?? defaultContestMode);
+
     if (url.pathname === '/api/stats') {
-      const stats = await loadStats(url.searchParams.get('username'));
+      const stats = await loadStats(url.searchParams.get('username'), contestMode);
       return sendJson(response, 200, stats);
     }
 
     if (url.pathname === '/emblem.svg' || url.pathname.endsWith('.svg')) {
-      const stats = await loadStats(usernameFromPath(url.pathname) ?? url.searchParams.get('username'));
+      const stats = await loadStats(usernameFromPath(url.pathname) ?? url.searchParams.get('username'), contestMode);
       const svg = renderContestEmblem(stats, { theme: url.searchParams.get('theme') ?? config.theme });
       return send(response, 200, svg, 'image/svg+xml; charset=utf-8');
     }
 
     if (url.pathname === '/emblem.png' || url.pathname.endsWith('.png')) {
-      const stats = await loadStats(usernameFromPath(url.pathname) ?? url.searchParams.get('username'));
+      const stats = await loadStats(usernameFromPath(url.pathname) ?? url.searchParams.get('username'), contestMode);
       const svg = renderContestEmblem(stats, { theme: url.searchParams.get('theme') ?? config.theme });
       const png = await renderPng(svg);
       return send(response, 200, png, 'image/png');
@@ -45,7 +49,7 @@ const server = http.createServer(async (request, response) => {
 
     return sendJson(response, 404, { error: 'Not found' });
   } catch (error) {
-    const status = error.message.includes('LEETCODE_SESSION') ? 401 : 500;
+    const status = error.statusCode ?? (error.message.includes('LEETCODE_SESSION') ? 401 : 500);
     return sendJson(response, status, { error: error.message });
   }
 });
@@ -54,16 +58,16 @@ server.listen(config.port, () => {
   console.log(`LeetCode Contest Emblem running at http://localhost:${config.port}`);
 });
 
-async function loadStats(requestedUsername) {
+async function loadStats(requestedUsername, contestMode) {
   const username = await client.resolveUsername(requestedUsername ?? config.username);
-  const cacheKey = username.toLowerCase();
+  const cacheKey = `${contestMode}:${username.toLowerCase()}`;
   const cached = cache.get(cacheKey);
   if (cached) {
     return cached;
   }
 
-  const contestData = await client.getContestData(username);
-  const stats = buildContestStats(username, contestData);
+  const contestData = await client.getContestData(username, { contestMode });
+  const stats = buildContestStats(username, contestData, { contestMode });
   cache.set(cacheKey, stats);
   return stats;
 }
