@@ -1,7 +1,7 @@
 import { formatDecimal, formatDuration, formatInteger, formatPercent } from './format.js';
 
 const CARD_WIDTH = 820;
-const CARD_HEIGHT = 430;
+const CARD_HEIGHT = 460;
 
 const THEMES = {
   dark: {
@@ -28,7 +28,7 @@ const THEMES = {
 
 export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   const colors = THEMES[theme] ?? THEMES.dark;
-  const chart = buildRatingChart(stats.contests, 116, 330, 646, 74, colors);
+  const chart = buildRatingChart(stats.contests, 116, 352, 646, 78, colors);
   const latest = stats.latestContest;
   const totalProblems = latest?.totalProblems ?? 4;
 
@@ -37,7 +37,7 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   <title id="title">${escapeXml(stats.username)} LeetCode contest emblem</title>
   <desc id="desc">Aggregate LeetCode contest stats including average solved, average rank, all-kills, average last solve time, best and worst finish, and rating trend.</desc>
   <rect width="${CARD_WIDTH}" height="${CARD_HEIGHT}" rx="18" fill="${colors.background}"/>
-  <rect x="14" y="14" width="792" height="402" rx="14" fill="${colors.panel}" stroke="${colors.stroke}"/>
+  <rect x="14" y="14" width="792" height="432" rx="14" fill="${colors.panel}" stroke="${colors.stroke}"/>
 
   <g transform="translate(44 42) scale(0.62)">
     <path d="M34 0 8 26a19 19 0 0 0 0 27l21 21a19 19 0 0 0 27 0l11-11" stroke="${colors.text}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -66,8 +66,8 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   ${smallMetric(654, 260, 'Peak', formatInteger(stats.highestRating), colors)}
 
   <g opacity="0.95" transform="translate(0 0)">
-    <text x="58" y="306" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Rating trend</text>
-    <text x="762" y="306" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="650" text-anchor="end">contest rating</text>
+    <text x="58" y="328" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Rating trend</text>
+    <text x="762" y="328" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="650" text-anchor="end">contest rating</text>
     ${chartGrid(colors, chart)}
     ${chart.points ? `<polyline points="${chart.points}" fill="none" stroke="${colors.accent}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
     ${chart.circles}
