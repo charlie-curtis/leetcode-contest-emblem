@@ -29,7 +29,7 @@ const THEMES = {
 
 export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   const colors = THEMES[theme] ?? THEMES.dark;
-  const chart = buildRatingChart(stats.contests, 314, 326, 448, 48, colors);
+  const chart = buildRatingChart(stats.contests, 116, 328, 646, 52, colors);
   const latest = stats.latestContest;
   const totalProblems = latest?.totalProblems ?? 4;
 
@@ -48,7 +48,8 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
 
   <text x="104" y="64" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="850">${escapeXml(truncateText(stats.username, 27))}</text>
   <text x="105" y="93" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="650">${contestModeLabel(stats.contestMode)}</text>
-  <text x="760" y="64" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="25" font-weight="850" text-anchor="end">#${formatInteger(stats.globalRanking)}</text>
+  <text x="760" y="60" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="850" text-anchor="end">#${formatInteger(stats.globalRanking)} - top ${formatPercent(stats.topPercentage)}</text>
+  <text x="760" y="87" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="end">global contest standing</text>
 
   <line x1="44" y1="122" x2="776" y2="122" stroke="${colors.stroke}"/>
 
@@ -61,20 +62,14 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
 
   ${smallMetric(58, 260, 'Contests', formatInteger(stats.totalContests), colors)}
   ${smallMetric(180, 260, 'All-kills', `${formatInteger(stats.allKillCount)} / ${formatInteger(stats.totalContests)}`, colors)}
-  ${smallMetric(314, 260, 'Current rating', formatInteger(stats.currentRating), colors)}
-  ${smallMetric(484, 260, 'Highest rating', formatInteger(stats.highestRating), colors)}
-  ${smallMetric(654, 260, 'Top %', formatPercent(stats.topPercentage), colors)}
-
-  <g transform="translate(44 294)">
-    <text x="0" y="14" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Latest contest</text>
-    <text x="0" y="42" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800">${escapeXml(truncateText(latest?.title ?? 'n/a', 27))}</text>
-    <text x="0" y="66" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="15">${latestRank(latest)} - avg finish ${formatDuration(stats.averageFinishTimeSeconds)}</text>
-  </g>
+  ${smallMetric(314, 260, 'Avg finish', formatDuration(stats.averageFinishTimeSeconds), colors)}
+  ${smallMetric(484, 260, 'Current rating', formatInteger(stats.currentRating), colors)}
+  ${smallMetric(654, 260, 'Highest rating', formatInteger(stats.highestRating), colors)}
 
   <g opacity="0.95" transform="translate(0 0)">
-    <text x="314" y="307" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Rating trend</text>
-    <text x="762" y="307" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="650" text-anchor="end">${chart.rangeLabel}</text>
-    ${chartGrid(colors)}
+    <text x="58" y="312" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Rating trend</text>
+    <text x="762" y="312" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="650" text-anchor="end">contest rating</text>
+    ${chartGrid(colors, chart)}
     ${chart.points ? `<polyline points="${chart.points}" fill="none" stroke="${colors.accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
     ${chart.circles}
   </g>
@@ -110,11 +105,16 @@ function latestRank(contest) {
   return contest?.ranking ? `#${formatInteger(contest.ranking)}` : 'n/a';
 }
 
-function chartGrid(colors) {
-  return [0, 1, 2, 3].map((index) => {
-    const y = 326 + index * 16;
-    return `<line x1="314" y1="${y}" x2="762" y2="${y}" stroke="${colors.grid}" stroke-width="1"/>`;
-  }).join('\n    ');
+function chartGrid(colors, chart) {
+  const rows = [
+    { y: 328, label: chart.maxLabel },
+    { y: 354, label: chart.midLabel },
+    { y: 380, label: chart.minLabel }
+  ];
+
+  return rows.map((row) => `
+    <text x="96" y="${row.y + 4}" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="650" text-anchor="end">${row.label}</text>
+    <line x1="116" y1="${row.y}" x2="762" y2="${row.y}" stroke="${colors.grid}" stroke-width="1"/>`).join('\n');
 }
 
 function buildRatingChart(contests, x, y, width, height, colors) {
@@ -123,7 +123,9 @@ function buildRatingChart(contests, x, y, width, height, colors) {
     return {
       points: '',
       circles: '',
-      rangeLabel: 'not enough data'
+      minLabel: 'n/a',
+      midLabel: 'n/a',
+      maxLabel: 'n/a'
     };
   }
 
@@ -150,7 +152,9 @@ function buildRatingChart(contests, x, y, width, height, colors) {
   return {
     points: coordinates.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' '),
     circles,
-    rangeLabel: `${formatInteger(min)}-${formatInteger(max)}`
+    minLabel: formatInteger(min),
+    midLabel: formatInteger((min + max) / 2),
+    maxLabel: formatInteger(max)
   };
 }
 

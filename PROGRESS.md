@@ -30,3 +30,4 @@ Build a local-first app that can later be deployed easily. It should generate bo
 - 2026-07-11: Pushed the initial implementation to GitHub.
 - 2026-07-11: Updated the emblem layout to reduce visual collisions, moved the rating chart into its own lower area, removed best/worst contest abbreviations, and added all-kill count.
 - 2026-07-11: Took a second UI pass based on review feedback: added chart labeling, safer SVG text truncation, clearer average-solved display, all-kills as count over total contests, stronger label contrast, and `mode=actual|virtual` request handling.
+- 2026-07-12: Clarified the rating trend by replacing the ambiguous min-max text with y-axis labels, paired global rank with top percentage in the header, removed the latest-contest block from the emblem, and used the freed space for a wider chart.
