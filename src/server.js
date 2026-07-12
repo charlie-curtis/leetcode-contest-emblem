@@ -5,7 +5,6 @@ import { buildContestStats } from './stats.js';
 import { renderContestEmblem } from './renderSvg.js';
 import { renderPng } from './renderPng.js';
 import { TimedCache } from './cache.js';
-import { normalizeContestMode } from './contestMode.js';
 
 const config = getConfig();
 const client = new LeetCodeClient({
@@ -13,35 +12,32 @@ const client = new LeetCodeClient({
   csrfToken: config.csrfToken
 });
 const cache = new TimedCache(config.cacheTtlMs);
-const defaultContestMode = normalizeContestMode(config.contestMode);
 
 const server = http.createServer(async (request, response) => {
   try {
     const url = new URL(request.url ?? '/', `http://${request.headers.host}`);
-    const pathContestMode = contestModeFromPath(url.pathname);
-    const contestMode = normalizeContestMode(url.searchParams.get('mode') ?? pathContestMode ?? defaultContestMode);
 
     if (url.pathname === '/health') {
       return sendJson(response, 200, { ok: true });
     }
 
     if (url.pathname === '/' || url.pathname === '/index.html') {
-      return sendHtml(response, renderHomePage(config.port, contestMode));
+      return sendHtml(response, renderHomePage(config.port));
     }
 
     if (url.pathname === '/api/stats') {
-      const stats = await loadStats(url.searchParams.get('username'), contestMode);
+      const stats = await loadStats(url.searchParams.get('username'));
       return sendJson(response, 200, stats);
     }
 
     if (url.pathname === '/emblem.svg' || url.pathname.endsWith('.svg')) {
-      const stats = await loadStats(usernameFromPath(url.pathname) ?? url.searchParams.get('username'), contestMode);
+      const stats = await loadStats(usernameFromPath(url.pathname) ?? url.searchParams.get('username'));
       const svg = renderContestEmblem(stats, { theme: url.searchParams.get('theme') ?? config.theme });
       return send(response, 200, svg, 'image/svg+xml; charset=utf-8');
     }
 
     if (url.pathname === '/emblem.png' || url.pathname.endsWith('.png')) {
-      const stats = await loadStats(usernameFromPath(url.pathname) ?? url.searchParams.get('username'), contestMode);
+      const stats = await loadStats(usernameFromPath(url.pathname) ?? url.searchParams.get('username'));
       const svg = renderContestEmblem(stats, { theme: url.searchParams.get('theme') ?? config.theme });
       const png = await renderPng(svg);
       return send(response, 200, png, 'image/png');
@@ -58,32 +54,27 @@ server.listen(config.port, () => {
   console.log(`LeetCode Contest Emblem running at http://localhost:${config.port}`);
 });
 
-async function loadStats(requestedUsername, contestMode) {
+async function loadStats(requestedUsername) {
   const username = await client.resolveUsername(requestedUsername ?? config.username);
-  const cacheKey = `${contestMode}:${username.toLowerCase()}`;
+  const cacheKey = username.toLowerCase();
   const cached = cache.get(cacheKey);
   if (cached) {
     return cached;
   }
 
-  const contestData = await client.getContestData(username, { contestMode });
-  const stats = buildContestStats(username, contestData, { contestMode });
+  const contestData = await client.getContestData(username);
+  const stats = buildContestStats(username, contestData);
   cache.set(cacheKey, stats);
   return stats;
 }
 
 function usernameFromPath(pathname) {
   const match = pathname.match(/^\/([^/]+)\.(svg|png)$/);
-  if (!match || ['emblem', 'actual', 'virtual'].includes(match[1])) {
+  if (!match || match[1] === 'emblem') {
     return null;
   }
 
   return decodeURIComponent(match[1]);
-}
-
-function contestModeFromPath(pathname) {
-  const match = pathname.match(/^\/(actual|virtual)\.(svg|png)$/);
-  return match?.[1] ?? null;
 }
 
 function sendJson(response, status, payload) {
@@ -102,10 +93,7 @@ function send(response, status, body, contentType) {
   response.end(body);
 }
 
-function renderHomePage(port, contestMode) {
-  const actualActive = contestMode === 'actual' ? ' aria-current="page"' : '';
-  const virtualActive = contestMode === 'virtual' ? ' aria-current="page"' : '';
-
+function renderHomePage(port) {
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -146,24 +134,6 @@ function renderHomePage(port, contestMode) {
         margin: 0;
       }
 
-      .switcher {
-        background: #20242d;
-        border: 1px solid #343944;
-        border-radius: 8px;
-        display: inline-flex;
-        padding: 4px;
-      }
-
-      .switcher a {
-        background: transparent;
-        color: #b4bbc7;
-      }
-
-      .switcher a[aria-current="page"] {
-        background: #ff9f1c;
-        color: #111318;
-      }
-
       img {
         width: 100%;
         height: auto;
@@ -192,16 +162,12 @@ function renderHomePage(port, contestMode) {
     <main>
       <header>
         <h1>LeetCode Contest Emblem</h1>
-        <div class="switcher" aria-label="Contest mode">
-          <a href="/?mode=actual"${actualActive}>Actual</a>
-          <a href="/?mode=virtual"${virtualActive}>Virtual</a>
-        </div>
       </header>
-      <img src="/emblem.svg?mode=${contestMode}" alt="LeetCode contest emblem preview" />
+      <img src="/emblem.svg" alt="LeetCode contest emblem preview" />
       <nav>
-        <a href="/${contestMode}.svg">SVG</a>
-        <a href="/${contestMode}.png">PNG</a>
-        <a href="/api/stats?mode=${contestMode}">JSON</a>
+        <a href="/emblem.svg">SVG</a>
+        <a href="/emblem.png">PNG</a>
+        <a href="/api/stats">JSON</a>
         <a href="http://localhost:${port}/health">Health</a>
       </nav>
     </main>

@@ -63,7 +63,6 @@ test('buildContestStats aggregates attended contests', () => {
   const stats = buildContestStats('RandomUserName554', sampleContestData);
 
   assert.equal(stats.totalContests, 4);
-  assert.equal(stats.contestMode, 'actual');
   assert.equal(stats.averageSolved, 2.75);
   assert.equal(Math.round(stats.averageRank), 813);
   assert.equal(stats.bestFinish.ranking, 233);

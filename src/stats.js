@@ -1,4 +1,4 @@
-export function buildContestStats(username, contestData, { contestMode = 'actual' } = {}) {
+export function buildContestStats(username, contestData) {
   const history = contestData.userContestRankingHistory ?? [];
   const attended = history
     .filter((entry) => entry.attended && Number.isFinite(entry.ranking) && entry.ranking > 0)
@@ -8,7 +8,6 @@ export function buildContestStats(username, contestData, { contestMode = 'actual
   if (attended.length === 0) {
     return {
       username,
-      contestMode,
       totalContests: 0,
       averageSolved: 0,
       averageRank: 0,
@@ -33,7 +32,6 @@ export function buildContestStats(username, contestData, { contestMode = 'actual
 
   return {
     username,
-    contestMode,
     totalContests: attended.length,
     averageSolved: average(attended.map((contest) => contest.problemsSolved)),
     averageRank: average(attended.map((contest) => contest.ranking)),

@@ -1,5 +1,4 @@
 import { formatDecimal, formatDuration, formatInteger, formatPercent } from './format.js';
-import { contestModeLabel } from './contestMode.js';
 
 const CARD_WIDTH = 820;
 const CARD_HEIGHT = 430;
@@ -29,14 +28,14 @@ const THEMES = {
 
 export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   const colors = THEMES[theme] ?? THEMES.dark;
-  const chart = buildRatingChart(stats.contests, 116, 328, 646, 52, colors);
+  const chart = buildRatingChart(stats.contests, 116, 330, 646, 74, colors);
   const latest = stats.latestContest;
   const totalProblems = latest?.totalProblems ?? 4;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${CARD_WIDTH}" height="${CARD_HEIGHT}" viewBox="0 0 ${CARD_WIDTH} ${CARD_HEIGHT}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
   <title id="title">${escapeXml(stats.username)} LeetCode contest emblem</title>
-  <desc id="desc">Aggregate ${escapeXml(stats.contestMode)} LeetCode contest stats including average solved, average rank, all-kills, average last solve time, best and worst finish, and rating trend.</desc>
+  <desc id="desc">Aggregate LeetCode contest stats including average solved, average rank, all-kills, average last solve time, best and worst finish, and rating trend.</desc>
   <rect width="${CARD_WIDTH}" height="${CARD_HEIGHT}" rx="18" fill="${colors.background}"/>
   <rect x="14" y="14" width="792" height="402" rx="14" fill="${colors.panel}" stroke="${colors.stroke}"/>
 
@@ -47,7 +46,7 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   </g>
 
   <text x="104" y="64" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="850">${escapeXml(truncateText(stats.username, 27))}</text>
-  <text x="105" y="93" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="650">${contestModeLabel(stats.contestMode)}</text>
+  <text x="105" y="93" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="650">Contest stats</text>
   <text x="760" y="60" fill="${colors.text}" font-family="Inter, Arial, sans-serif" font-size="23" font-weight="850" text-anchor="end">#${formatInteger(stats.globalRanking)} - top ${formatPercent(stats.topPercentage)}</text>
   <text x="760" y="87" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700" text-anchor="end">global contest standing</text>
 
@@ -67,10 +66,10 @@ export function renderContestEmblem(stats, { theme = 'dark' } = {}) {
   ${smallMetric(654, 260, 'Peak', formatInteger(stats.highestRating), colors)}
 
   <g opacity="0.95" transform="translate(0 0)">
-    <text x="58" y="312" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Rating trend</text>
-    <text x="762" y="312" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="650" text-anchor="end">contest rating</text>
+    <text x="58" y="306" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="750">Rating trend</text>
+    <text x="762" y="306" fill="${colors.muted}" font-family="Inter, Arial, sans-serif" font-size="12" font-weight="650" text-anchor="end">contest rating</text>
     ${chartGrid(colors, chart)}
-    ${chart.points ? `<polyline points="${chart.points}" fill="none" stroke="${colors.accent}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+    ${chart.points ? `<polyline points="${chart.points}" fill="none" stroke="${colors.accent}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
     ${chart.circles}
   </g>
 </svg>`;
@@ -107,9 +106,9 @@ function latestRank(contest) {
 
 function chartGrid(colors, chart) {
   const rows = [
-    { y: 328, label: chart.maxLabel },
-    { y: 354, label: chart.midLabel },
-    { y: 380, label: chart.minLabel }
+    { y: chart.y, label: chart.maxLabel },
+    { y: chart.y + chart.height / 2, label: chart.midLabel },
+    { y: chart.y + chart.height, label: chart.minLabel }
   ];
 
   return rows.map((row) => `
@@ -125,7 +124,9 @@ function buildRatingChart(contests, x, y, width, height, colors) {
       circles: '',
       minLabel: 'n/a',
       midLabel: 'n/a',
-      maxLabel: 'n/a'
+      maxLabel: 'n/a',
+      y,
+      height
     };
   }
 
@@ -143,10 +144,10 @@ function buildRatingChart(contests, x, y, width, height, colors) {
     };
   });
 
-  const pointEvery = Math.max(Math.ceil(coordinates.length / 14), 1);
+  const pointEvery = Math.max(Math.ceil(coordinates.length / 8), 1);
   const circles = coordinates
     .filter((_, index) => index % pointEvery === 0 || index === coordinates.length - 1)
-    .map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3.4" fill="${colors.accent}"/>`)
+    .map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${point.y.toFixed(1)}" r="3" fill="${colors.accent}"/>`)
     .join('\n    ');
 
   return {
@@ -154,7 +155,9 @@ function buildRatingChart(contests, x, y, width, height, colors) {
     circles,
     minLabel: formatInteger(min),
     midLabel: formatInteger((min + max) / 2),
-    maxLabel: formatInteger(max)
+    maxLabel: formatInteger(max),
+    y,
+    height
   };
 }
 
