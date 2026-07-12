@@ -18,7 +18,6 @@ The app reads your LeetCode cookie from local environment variables, fetches con
 - Worst finish
 - All-kill count
 - Average last solve time
-- Average bugs when failed-attempt data is available
 - Current and highest contest rating when available
 - Rating trend line
 
@@ -72,8 +71,6 @@ http://localhost:3000/virtual.png
 The query style still works too: `http://localhost:3000/emblem.svg?mode=actual`.
 
 `actual` is backed by LeetCode's rated contest history GraphQL data. `virtual` is a first-class mode in the app, but currently returns a clear `501` response because LeetCode virtual contest history is not exposed by the same rated-history endpoint.
-
-The `Avg bugs` stat uses failed-attempt counts when they are present in contest data. LeetCode's rated contest-history GraphQL response does not currently expose failed attempts, so the emblem shows `n/a` until a reliable secondary data source is wired in.
 
 ## GitHub README Example
 

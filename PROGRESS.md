@@ -33,3 +33,4 @@ Build a local-first app that can later be deployed easily. It should generate bo
 - 2026-07-12: Clarified the rating trend by replacing the ambiguous min-max text with y-axis labels, paired global rank with top percentage in the header, removed the latest-contest block from the emblem, and used the freed space for a wider chart.
 - 2026-07-12: Added easier contest-mode access with home page Actual/Virtual switcher links and shortcut routes such as `/actual.svg` and `/virtual.svg`.
 - 2026-07-12: Renamed the misleading `Avg finish` label to `Avg last solve`, added an `Avg bugs` stat with unavailable-data handling, and documented that LeetCode's rated contest-history GraphQL response does not currently include failed-attempt counts.
+- 2026-07-12: Removed `Avg bugs` because it cannot be populated from the current LeetCode contest-history response, and split rating display into separate `Rating` and `Peak` stats instead of `current / peak`.
